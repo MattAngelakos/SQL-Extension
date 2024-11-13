@@ -137,6 +137,7 @@ def replace_with_emf_or_gb(match):
 def make_emf_struct(emf_struct, df):
     gvs = df[emf_struct['V']].drop_duplicates()
     mf_struct = [{v: row[i] for i, v in enumerate(emf_struct['V'])} for row in gvs.values]
+    print(mf_struct)
     normal_aggregates = {}
     for f in emf_struct['F']:
         if not any(char.isdigit() for char in f):
@@ -235,7 +236,7 @@ def query():
                             cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
-    lines = "SELECT ATTRIBUTE(S):\ncust, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant, 4_avg_quant\nNUMBER OF GROUPING VARIABLES(n):\n4\nGROUPING ATTRIBUTES(V):\ncust\nF-VECT([F]):\nsum_quant, 1_sum_quant, 1_avg_quant, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant, 4_avg_quant\nSELECT CONDITION-VECT([σ]):\n1.state='NY' and 1.cust=cust and 1.month=2\n2.state=’NJ’ and 2.cust=cust\n3.state=’CT’ and 3.cust=cust\n4.state='PA' and 4.cust=cust\nHAVING_CONDITION(G):\n2_sum_quant < 3_sum_quant and 3_avg_quant > 475"
+    lines = "SELECT ATTRIBUTE(S):\ncust, prod, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nNUMBER OF GROUPING VARIABLES(n):\n4\nGROUPING ATTRIBUTES(V):\ncust, prod\nF-VECT([F]):\nsum_quant, 1_sum_quant, 1_avg_quant, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nSELECT CONDITION-VECT([σ]):\n1.state='NY' and 1.cust=cust and 1.month=3\n2.state=’NJ’ and 2.cust=cust\n3.state=’CT’ and 3.cust=cust\nHAVING_CONDITION(G):\n3_avg_quant > 475"
     emf_struct = process_txt(lines)
     rows = cur.fetchall()
     column_names = [description[0] for description in cur.description]
