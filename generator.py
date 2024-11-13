@@ -1,9 +1,18 @@
 """
-Name: Matthew Angelakos and Christopher Arias
+Names: Matthew Angelakos and Christopher Arias
 Professor Kim
 EMF Query Project
 December 15 2024
 Header Comment: 
+Dependencies: Ensure sure that the psycopg2, dotenv, pandas, and postgresSQL are installed, The env file in the 
+will need to be updated with whoever's credentials needed to connect to your database. If needed the sql file to create the 
+sales table that is needed to run the program is included. Run load_sales_10000_table (NEW).sql to execute it.
+Starting the Program: Type 'python generator.py' and the program will begin executing.
+Running the Program: When the program is run, the terminal will prompt the user to input a file name or a manual input of the phi operatprs
+inline. The input will then be processed and will generate an algorithm corresponding to the type of query specified by the
+user input.
+Output: The program will output to a file called '_generated.py', which can be run without input to return a table of the output
+for the query. This process will run automatically after the generator.py is run however that can be changed by removing line 540 of this file.
 """
 import os
 import psycopg2
