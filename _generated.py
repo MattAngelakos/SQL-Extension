@@ -106,7 +106,7 @@ def process_txt(lines):
                         if "," in lines[i]:
                             splitting_var = ","
                         else:
-                            emf_struct[var].append(lines[i])
+                            emf_struct[var].append(rearrange_variable_names(lines[i]))
                         vars = rearrange_variable_names(lines[i])
                         vars = vars.split(splitting_var)
                         vars = [v.strip() for v in vars]
@@ -114,6 +114,8 @@ def process_txt(lines):
                     i = i + 1
                     if(i == len(lines)):
                         break
+    for i, where in enumerate(emf_struct['σ']):
+        emf_struct['σ'][i] = re.sub(r'\b\w+\b', replace_with_emf_or_gb, where)
     print(emf_struct)
     return emf_struct
 
@@ -154,6 +156,12 @@ def make_emf_struct(emf_struct, df):
             elif 'sum' in f:
                 normal_aggregates[f] = sum(df[val]) 
     for i, where in enumerate(emf_struct['σ']):
+        f2 = []
+        for f in emf_struct['F']: 
+            match = re.search(r'(?<=_)(\D+)(?=\d*$)', f) 
+            val = match.group(1)
+            if str(i+1) in f:
+                f2.append(f)
         for j, row in df.iterrows():
             for gb in mf_struct:
                 state = gb.get('state')
@@ -164,40 +172,36 @@ def make_emf_struct(emf_struct, df):
                 year = gb.get('year')
                 quant = gb.get('quant')
                 date = gb.get('date')
-                modified_where = re.sub(r'\b\w+\b', replace_with_emf_or_gb, where)
-                if eval(modified_where):
-                    for f in emf_struct['F']:
-                        match = re.search(r'(?<=_)(\D+)(?=\d*$)', f)
-                        val = match.group(1)
-                        if str(i+1) in f:
-                            if 'min' in f:
-                                try:
-                                    if gb[f] > row[val]:
-                                        gb[f] = row[val]
-                                except KeyError:
-                                    gb[f] = row[val] 
-                            elif 'max' in f:
-                                try:
-                                    if gb[f] < row[val]:
-                                        gb[f] = row[val]
-                                except KeyError:
+                if eval(where):
+                    for f in f2:
+                        if 'min' in f:
+                            try:
+                                if gb[f] > row[val]:
                                     gb[f] = row[val]
-                            elif 'count' in f:
-                                try:
-                                    gb[f] = gb[f] + 1
-                                except KeyError:
-                                    gb[f] = 1
-                            elif 'avg' in f:
-                                try:
-                                    gb[f][1] = ((gb[f][1] * gb[f][0]) + row[val]) / (gb[f][0] + 1)
-                                    gb[f][0] = gb[f][0] + 1
-                                except KeyError:
-                                    gb[f] = [1, row[val]]
-                            elif 'sum' in f:
-                                try:
-                                    gb[f] = gb[f] + row[val]
-                                except KeyError:
-                                    gb[f] = row[val] 
+                            except KeyError:
+                                gb[f] = row[val] 
+                        elif 'max' in f:
+                            try:
+                                if gb[f] < row[val]:
+                                    gb[f] = row[val]
+                            except KeyError:
+                                gb[f] = row[val]
+                        elif 'count' in f:
+                            try:
+                                gb[f] = gb[f] + 1
+                            except KeyError:
+                                gb[f] = 1
+                        elif 'avg' in f:
+                            try:
+                                gb[f][1] = ((gb[f][1] * gb[f][0]) + row[val]) / (gb[f][0] + 1)
+                                gb[f][0] = gb[f][0] + 1
+                            except KeyError:
+                                gb[f] = [1, row[val]]
+                        elif 'sum' in f:
+                            try:
+                                gb[f] = gb[f] + row[val]
+                            except KeyError:
+                                gb[f] = row[val] 
     for gb in mf_struct:
         for f in emf_struct['F']:
             if isinstance(gb.get(f), list) and len(gb[f]) > 1:
