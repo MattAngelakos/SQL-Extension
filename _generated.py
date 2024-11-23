@@ -94,8 +94,11 @@ def process_txt(lines):
             if var == "n":
                 emf_struct[var] = lines[i]
             elif var == "G":
-                vars = rearrange_variable_names(lines[i])
-                emf_struct[var] = parse_condition_sql(vars)
+                try:
+                    vars = rearrange_variable_names(lines[i])
+                    emf_struct[var] = parse_condition_sql(vars)
+                except:
+                    continue
             else:
                 emf_struct[var] = []
                 while ":" not in lines[i]:
@@ -209,13 +212,16 @@ def make_emf_struct(emf_struct, df):
     return mf_struct, normal_aggregates
 
 def handle_having_conditions(emf_struct, mf_struct, normal_aggregates):
-    having = emf_struct['G']
-    modified_having = re.sub(r'\b\w+\b', replace_with_emf_or_gb, having)
-    filtered_data = []
-    for gb in mf_struct:
-        if eval(modified_having):
-            filtered_data.append(gb)
-    return filtered_data
+    try:
+        having = emf_struct['G']
+        modified_having = re.sub(r'\w+', replace_with_emf_or_gb, having)
+        filtered_data = []
+        for gb in mf_struct:
+            if eval(modified_having):
+                filtered_data.append(gb)
+        return filtered_data
+    except:
+        return mf_struct
 
 def handle_selection(emf_struct, mf_struct, normal_aggregates):
     for d in mf_struct:
@@ -240,7 +246,7 @@ def query():
                             cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
-    lines = "SELECT ATTRIBUTE(S):\ncust, prod, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nNUMBER OF GROUPING VARIABLES(n):\n4\nGROUPING ATTRIBUTES(V):\ncust, prod\nF-VECT([F]):\nsum_quant, 1_sum_quant, 1_avg_quant, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nSELECT CONDITION-VECT([σ]):\n1.state='NY' and 1.cust=cust and 1.month=3\n2.state=’NJ’ and 2.cust=cust\n3.state=’CT’ and 3.cust=cust\nHAVING_CONDITION(G):\n3_avg_quant > 475"
+    lines = "SELECT ATTRIBUTE(S):\ncust, prod, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nNUMBER OF GROUPING VARIABLES(n):\n3\nGROUPING ATTRIBUTES(V):\ncust, prod\nF-VECT([F]):\nsum_quant, 1_sum_quant, 1_avg_quant, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nSELECT CONDITION-VECT([σ]):\n1.state='NY' and 1.cust=cust and 1.month=3\n2.state=’NJ’ and 2.cust=cust\n3.state=’CT’ and 3.cust=cust\nHAVING_CONDITION(G):\n"
     emf_struct = process_txt(lines)
     rows = cur.fetchall()
     column_names = [description[0] for description in cur.description]

@@ -11,4 +11,3 @@ SELECT CONDITION-VECT([σ]):
 2.state=’NJ’ and 2.cust=cust
 3.state=’CT’ and 3.cust=cust
 HAVING_CONDITION(G):
-3_avg_quant > 475

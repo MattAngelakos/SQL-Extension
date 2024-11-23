@@ -114,8 +114,11 @@ def process_txt(lines): #this function takes in a string(the query input) and pr
             if var == "n": #n is the simplest case its just the value of that line
                 emf_struct[var] = lines[i]
             elif var == "G": #G is 2nd simplest case. First we must rearrange variable names then make our abstract syntax tree for that conditon then we can define it
-                vars = rearrange_variable_names(lines[i])
-                emf_struct[var] = parse_condition_sql(vars)
+                try:
+                    vars = rearrange_variable_names(lines[i])
+                    emf_struct[var] = parse_condition_sql(vars)
+                except:
+                    continue
             else: #our other cases can have more than 1 value defined as they are array values so a little more involved
                 emf_struct[var] = [] #initalize this struct(an array)
                 while ":" not in lines[i]: #keep going till we aren't at the next emf variable(only really important for σ)
@@ -227,13 +230,16 @@ def make_emf_struct(emf_struct, df): #this is the function to create the intial 
     return mf_struct, normal_aggregates #return our final mf_struct and the normal aggregates
 
 def handle_having_conditions(emf_struct, mf_struct, normal_aggregates):#this will apply our having to all rows of our mf_struct using the same logic of the select conditions
-    having = emf_struct['G']
-    modified_having = re.sub(r'\b\w+\b', replace_with_emf_or_gb, having)
-    filtered_data = []
-    for gb in mf_struct:
-        if eval(modified_having):
-            filtered_data.append(gb)
-    return filtered_data
+    try:
+        having = emf_struct['G']
+        modified_having = re.sub(r'\b\w+\b', replace_with_emf_or_gb, having)
+        filtered_data = []
+        for gb in mf_struct:
+            if eval(modified_having):
+                filtered_data.append(gb)
+        return filtered_data
+    except:
+        return mf_struct
 
 def handle_selection(emf_struct, mf_struct, normal_aggregates):#this function gets our final table ready if a column is in S keep it, otherwise remove
     for d in mf_struct:
@@ -376,8 +382,11 @@ def process_txt(lines):
             if var == "n":
                 emf_struct[var] = lines[i]
             elif var == "G":
-                vars = rearrange_variable_names(lines[i])
-                emf_struct[var] = parse_condition_sql(vars)
+                try:
+                    vars = rearrange_variable_names(lines[i])
+                    emf_struct[var] = parse_condition_sql(vars)
+                except:
+                    continue
             else:
                 emf_struct[var] = []
                 while ":" not in lines[i]:
@@ -491,13 +500,16 @@ def make_emf_struct(emf_struct, df):
     return mf_struct, normal_aggregates
 
 def handle_having_conditions(emf_struct, mf_struct, normal_aggregates):
-    having = emf_struct['G']
-    modified_having = re.sub(r'\\b\w+\\b', replace_with_emf_or_gb, having)
-    filtered_data = []
-    for gb in mf_struct:
-        if eval(modified_having):
-            filtered_data.append(gb)
-    return filtered_data
+    try:
+        having = emf_struct['G']
+        modified_having = re.sub(r'\b\w+\b', replace_with_emf_or_gb, having)
+        filtered_data = []
+        for gb in mf_struct:
+            if eval(modified_having):
+                filtered_data.append(gb)
+        return filtered_data
+    except:
+        return mf_struct
 
 def handle_selection(emf_struct, mf_struct, normal_aggregates):
     for d in mf_struct:
