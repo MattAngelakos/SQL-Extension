@@ -145,26 +145,28 @@ def make_emf_struct(emf_struct, df):
     print(mf_struct)
     normal_aggregates = {}
     for f in emf_struct['F']:
-        if not any(char.isdigit() for char in f):
-            match = re.search(r'(?<=_)(\D+)(?=\d*$)', f)
-            val = match.group(1)
-            if 'min' in f:
-                normal_aggregates[f] = min(df[val]) 
-            elif 'max' in f:
-                normal_aggregates[f] = max(df[val]) 
-            elif 'count' in f:
-                normal_aggregates[f] = len(df)
-            elif 'avg' in f:
-                normal_aggregates[f] = sum(df[val])/len(df)
-            elif 'sum' in f:
-                normal_aggregates[f] = sum(df[val]) 
+        if len(f) > 0:
+            if not any(char.isdigit() for char in f):
+                match = re.search(r'(?<=_)(\D+)(?=\d*$)', f)
+                val = match.group(1)
+                if 'min' in f:
+                    normal_aggregates[f] = min(df[val]) 
+                elif 'max' in f:
+                    normal_aggregates[f] = max(df[val]) 
+                elif 'count' in f:
+                    normal_aggregates[f] = len(df)
+                elif 'avg' in f:
+                    normal_aggregates[f] = sum(df[val])/len(df)
+                elif 'sum' in f:
+                    normal_aggregates[f] = sum(df[val]) 
     for i, where in enumerate(emf_struct['σ']):
         f2 = []
         for f in emf_struct['F']: 
-            match = re.search(r'(?<=_)(\D+)(?=\d*$)', f) 
-            val = match.group(1)
-            if str(i+1) in f:
-                f2.append(f)
+            if len(f) > 0: 
+                match = re.search(r'(?<=_)(\D+)(?=\d*$)', f) 
+                val = match.group(1)
+                if str(i+1) in f:
+                    f2.append(f)
         for j, row in df.iterrows():
             for gb in mf_struct:
                 state = gb.get('state')
@@ -214,7 +216,7 @@ def make_emf_struct(emf_struct, df):
 def handle_having_conditions(emf_struct, mf_struct, normal_aggregates):
     try:
         having = emf_struct['G']
-        modified_having = re.sub(r'\w+', replace_with_emf_or_gb, having)
+        modified_having = re.sub(r'\b\w+\b', replace_with_emf_or_gb, having)
         filtered_data = []
         for gb in mf_struct:
             if eval(modified_having):
@@ -246,7 +248,7 @@ def query():
                             cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
-    lines = "SELECT ATTRIBUTE(S):\ncust, prod, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nNUMBER OF GROUPING VARIABLES(n):\n3\nGROUPING ATTRIBUTES(V):\ncust, prod\nF-VECT([F]):\nsum_quant, 1_sum_quant, 1_avg_quant, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nSELECT CONDITION-VECT([σ]):\n1.state='NY' and 1.cust=cust and 1.month=3\n2.state=’NJ’ and 2.cust=cust\n3.state=’CT’ and 3.cust=cust\nHAVING_CONDITION(G):\n"
+    lines = "SELECT ATTRIBUTE(S):\ncust, prod\nNUMBER OF GROUPING VARIABLES(n):\n3\nGROUPING ATTRIBUTES(V):\ncust, prod\nF-VECT([F]):\n\nSELECT CONDITION-VECT([σ]):\n1.state='NY' and 1.cust=cust and 1.month=3\n2.state=’NJ’ and 2.cust=cust\n3.state=’CT’ and 3.cust=cust\nHAVING_CONDITION(G):\n"
     emf_struct = process_txt(lines)
     rows = cur.fetchall()
     column_names = [description[0] for description in cur.description]

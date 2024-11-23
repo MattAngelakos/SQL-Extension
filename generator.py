@@ -163,19 +163,20 @@ def make_emf_struct(emf_struct, df): #this is the function to create the intial 
     mf_struct = [{v: row[i] for i, v in enumerate(emf_struct['V'])} for row in gvs.values] #initalize our struct to what was found and make it a dictionary for a table eventually
     normal_aggregates = {} #we may need the normal aggregates depending on what the query calls for
     for f in emf_struct['F']: #iterate through the functions list
-        if not any(char.isdigit() for char in f): #check if no digits ie GV are present
-            match = re.search(r'(?<=_)(\D+)(?=\d*$)', f) #match which value of the sales table it is
-            val = match.group(1)
-            if 'min' in f: #these if just compute the normal aggregates for whatever was found
-                normal_aggregates[f] = min(df[val]) 
-            elif 'max' in f:
-                normal_aggregates[f] = max(df[val]) 
-            elif 'count' in f:
-                normal_aggregates[f] = len(df)
-            elif 'avg' in f:
-                normal_aggregates[f] = sum(df[val])/len(df)
-            elif 'sum' in f:
-                normal_aggregates[f] = sum(df[val]) 
+        if len(f) > 0:
+            if not any(char.isdigit() for char in f): #check if no digits ie GV are present
+                match = re.search(r'(?<=_)(\D+)(?=\d*$)', f) #match which value of the sales table it is
+                val = match.group(1)
+                if 'min' in f: #these if just compute the normal aggregates for whatever was found
+                    normal_aggregates[f] = min(df[val]) 
+                elif 'max' in f:
+                    normal_aggregates[f] = max(df[val]) 
+                elif 'count' in f:
+                    normal_aggregates[f] = len(df)
+                elif 'avg' in f:
+                    normal_aggregates[f] = sum(df[val])/len(df)
+                elif 'sum' in f:
+                    normal_aggregates[f] = sum(df[val]) 
     for i, where in enumerate(emf_struct['σ']): #General loop that represents the EMF algo that will scan through the table loop through the GV first
         f2 = []
         for f in emf_struct['F']: #now we iterate through the aggregate functions
@@ -433,26 +434,28 @@ def make_emf_struct(emf_struct, df):
     print(mf_struct)
     normal_aggregates = {{}}
     for f in emf_struct['F']:
-        if not any(char.isdigit() for char in f):
-            match = re.search(r'(?<=_)(\D+)(?=\d*$)', f)
-            val = match.group(1)
-            if 'min' in f:
-                normal_aggregates[f] = min(df[val]) 
-            elif 'max' in f:
-                normal_aggregates[f] = max(df[val]) 
-            elif 'count' in f:
-                normal_aggregates[f] = len(df)
-            elif 'avg' in f:
-                normal_aggregates[f] = sum(df[val])/len(df)
-            elif 'sum' in f:
-                normal_aggregates[f] = sum(df[val]) 
+        if len(f) > 0:
+            if not any(char.isdigit() for char in f):
+                match = re.search(r'(?<=_)(\D+)(?=\d*$)', f)
+                val = match.group(1)
+                if 'min' in f:
+                    normal_aggregates[f] = min(df[val]) 
+                elif 'max' in f:
+                    normal_aggregates[f] = max(df[val]) 
+                elif 'count' in f:
+                    normal_aggregates[f] = len(df)
+                elif 'avg' in f:
+                    normal_aggregates[f] = sum(df[val])/len(df)
+                elif 'sum' in f:
+                    normal_aggregates[f] = sum(df[val]) 
     for i, where in enumerate(emf_struct['σ']):
         f2 = []
         for f in emf_struct['F']: 
-            match = re.search(r'(?<=_)(\D+)(?=\d*$)', f) 
-            val = match.group(1)
-            if str(i+1) in f:
-                f2.append(f)
+            if len(f) > 0: 
+                match = re.search(r'(?<=_)(\D+)(?=\d*$)', f) 
+                val = match.group(1)
+                if str(i+1) in f:
+                    f2.append(f)
         for j, row in df.iterrows():
             for gb in mf_struct:
                 state = gb.get('state')
@@ -502,7 +505,7 @@ def make_emf_struct(emf_struct, df):
 def handle_having_conditions(emf_struct, mf_struct, normal_aggregates):
     try:
         having = emf_struct['G']
-        modified_having = re.sub(r'\b\w+\b', replace_with_emf_or_gb, having)
+        modified_having = re.sub(r'\\b\w+\\b', replace_with_emf_or_gb, having)
         filtered_data = []
         for gb in mf_struct:
             if eval(modified_having):
