@@ -123,8 +123,9 @@ def process_txt(lines): #this function takes in a string(the query input) and pr
                 emf_struct[var] = [] #initalize this struct(an array)
                 while ":" not in lines[i]: #keep going till we aren't at the next emf variable(only really important for σ)
                     if var == "σ": #same logic applies as having just with everyline in the conditionals
-                        vars = rearrange_variable_names(lines[i])
-                        emf_struct[var].append(parse_condition_sql(vars))
+                        if len(lines[i]) > 0:
+                            vars = rearrange_variable_names(lines[i])
+                            emf_struct[var].append(parse_condition_sql(vars))
                     else: #otherwise we are making the select, F, or grouping attribues
                         if "," in lines[i]: #comma is the seperator
                             splitting_var = ","
@@ -392,8 +393,9 @@ def process_txt(lines):
                 emf_struct[var] = []
                 while ":" not in lines[i]:
                     if var == "σ":
-                        vars = rearrange_variable_names(lines[i])
-                        emf_struct[var].append(parse_condition_sql(vars))
+                        if len(lines[i]) > 0:
+                            vars = rearrange_variable_names(lines[i])
+                            emf_struct[var].append(parse_condition_sql(vars))
                     else:
                         if "," in lines[i]:
                             splitting_var = ","

@@ -103,8 +103,9 @@ def process_txt(lines):
                 emf_struct[var] = []
                 while ":" not in lines[i]:
                     if var == "σ":
-                        vars = rearrange_variable_names(lines[i])
-                        emf_struct[var].append(parse_condition_sql(vars))
+                        if len(lines[i]) > 0:
+                            vars = rearrange_variable_names(lines[i])
+                            emf_struct[var].append(parse_condition_sql(vars))
                     else:
                         if "," in lines[i]:
                             splitting_var = ","
@@ -248,7 +249,7 @@ def query():
                             cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
-    lines = "SELECT ATTRIBUTE(S):\ncust, prod\nNUMBER OF GROUPING VARIABLES(n):\n3\nGROUPING ATTRIBUTES(V):\ncust, prod\nF-VECT([F]):\n\nSELECT CONDITION-VECT([σ]):\n1.state='NY' and 1.cust=cust and 1.month=3\n2.state=’NJ’ and 2.cust=cust\n3.state=’CT’ and 3.cust=cust\nHAVING_CONDITION(G):\n"
+    lines = 'SELECT ATTRIBUTE(S):\ncust, prod, sum_quant\nNUMBER OF GROUPING VARIABLES(n):\n0\nGROUPING ATTRIBUTES(V):\ncust, prod\nF-VECT([F]):\nsum_quant\nSELECT CONDITION-VECT([σ]):\n\nHAVING_CONDITION(G):\n'
     emf_struct = process_txt(lines)
     rows = cur.fetchall()
     column_names = [description[0] for description in cur.description]
