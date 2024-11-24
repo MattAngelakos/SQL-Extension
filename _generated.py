@@ -141,8 +141,13 @@ def replace_with_emf_or_gb(match):
   
 
 def make_emf_struct(emf_struct, df):
-    gvs = df[emf_struct['V']].drop_duplicates()
-    mf_struct = [{v: row[i] for i, v in enumerate(emf_struct['V'])} for row in gvs.values]
+    try:
+        gvs = df[emf_struct['V']].drop_duplicates()
+        mf_struct = [{v: row[i] for i, v in enumerate(emf_struct['V'])} for row in gvs.values]
+        handleV = True
+    except:
+        mf_struct = [{v: row[i] for i, v in enumerate(df.columns)} for row in df.values]
+        handleV = False
     print(mf_struct)
     normal_aggregates = {}
     for f in emf_struct['F']:
@@ -208,10 +213,12 @@ def make_emf_struct(emf_struct, df):
                                 gb[f] = gb[f] + row[val]
                             except KeyError:
                                 gb[f] = row[val] 
-    for gb in mf_struct:
-        for f in emf_struct['F']:
-            if isinstance(gb.get(f), list) and len(gb[f]) > 1:
-                gb[f] = gb[f][1] 
+    if handleV:
+        for gb in mf_struct:
+            for f in emf_struct['F']:
+                if isinstance(gb.get(f), list) and len(gb[f]) > 1:
+                    gb[f] = gb[f][1] 
+    print(mf_struct)
     return mf_struct, normal_aggregates
 
 def handle_having_conditions(emf_struct, mf_struct, normal_aggregates):
@@ -249,7 +256,7 @@ def query():
                             cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
-    lines = 'SELECT ATTRIBUTE(S):\ncust, prod, sum_quant\nNUMBER OF GROUPING VARIABLES(n):\n0\nGROUPING ATTRIBUTES(V):\ncust, prod\nF-VECT([F]):\nsum_quant\nSELECT CONDITION-VECT([σ]):\n\nHAVING_CONDITION(G):\n'
+    lines = 'SELECT ATTRIBUTE(S):\ncust, prod, sum_quant\nNUMBER OF GROUPING VARIABLES(n):\n0\nGROUPING ATTRIBUTES(V):\n\nF-VECT([F]):\nsum_quant\nSELECT CONDITION-VECT([σ]):\n\nHAVING_CONDITION(G):\n'
     emf_struct = process_txt(lines)
     rows = cur.fetchall()
     column_names = [description[0] for description in cur.description]

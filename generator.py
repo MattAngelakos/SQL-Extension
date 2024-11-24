@@ -160,8 +160,13 @@ def replace_with_emf_or_gb(match): #2nd regex, this will basically rename the va
   
 
 def make_emf_struct(emf_struct, df): #this is the function to create the intial table of the mf_struct before the select or having clauses
-    gvs = df[emf_struct['V']].drop_duplicates() #This is the first pass by isolating all distinct values of V
-    mf_struct = [{v: row[i] for i, v in enumerate(emf_struct['V'])} for row in gvs.values] #initalize our struct to what was found and make it a dictionary for a table eventually
+    try:
+        gvs = df[emf_struct['V']].drop_duplicates() #This is the first pass by isolating all distinct values of V
+        mf_struct = [{v: row[i] for i, v in enumerate(emf_struct['V'])} for row in gvs.values] #initalize our struct to what was found and make it a dictionary for a table eventually
+        handleV = True
+    except:
+        mf_struct = [{v: row[i] for i, v in enumerate(df.columns)} for row in df.values]
+        handleV = False
     normal_aggregates = {} #we may need the normal aggregates depending on what the query calls for
     for f in emf_struct['F']: #iterate through the functions list
         if len(f) > 0:
@@ -225,10 +230,11 @@ def make_emf_struct(emf_struct, df): #this is the function to create the intial 
                                 gb[f] = gb[f] + row[val]
                             except KeyError:
                                 gb[f] = row[val] 
-    for gb in mf_struct: #remove the tuple part of the averages afterwards
-        for f in emf_struct['F']:
-            if isinstance(gb.get(f), list) and len(gb[f]) > 1:
-                gb[f] = gb[f][1] 
+    if handleV:
+        for gb in mf_struct: #remove the tuple part of the averages afterwards
+            for f in emf_struct['F']:
+                if isinstance(gb.get(f), list) and len(gb[f]) > 1:
+                    gb[f] = gb[f][1] 
     return mf_struct, normal_aggregates #return our final mf_struct and the normal aggregates
 
 def handle_having_conditions(emf_struct, mf_struct, normal_aggregates):#this will apply our having to all rows of our mf_struct using the same logic of the select conditions
@@ -431,8 +437,13 @@ def replace_with_emf_or_gb(match):
   
 
 def make_emf_struct(emf_struct, df):
-    gvs = df[emf_struct['V']].drop_duplicates()
-    mf_struct = [{{v: row[i] for i, v in enumerate(emf_struct['V'])}} for row in gvs.values]
+    try:
+        gvs = df[emf_struct['V']].drop_duplicates()
+        mf_struct = [{{v: row[i] for i, v in enumerate(emf_struct['V'])}} for row in gvs.values]
+        handleV = True
+    except:
+        mf_struct = [{{v: row[i] for i, v in enumerate(df.columns)}} for row in df.values]
+        handleV = False
     print(mf_struct)
     normal_aggregates = {{}}
     for f in emf_struct['F']:
@@ -498,10 +509,12 @@ def make_emf_struct(emf_struct, df):
                                 gb[f] = gb[f] + row[val]
                             except KeyError:
                                 gb[f] = row[val] 
-    for gb in mf_struct:
-        for f in emf_struct['F']:
-            if isinstance(gb.get(f), list) and len(gb[f]) > 1:
-                gb[f] = gb[f][1] 
+    if handleV:
+        for gb in mf_struct:
+            for f in emf_struct['F']:
+                if isinstance(gb.get(f), list) and len(gb[f]) > 1:
+                    gb[f] = gb[f][1] 
+    print(mf_struct)
     return mf_struct, normal_aggregates
 
 def handle_having_conditions(emf_struct, mf_struct, normal_aggregates):
