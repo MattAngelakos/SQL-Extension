@@ -256,7 +256,7 @@ def query():
                             cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
-    lines = 'SELECT ATTRIBUTE(S):\nprod, month, 1_sum_quant, 2_sum_quant, 3_sum_quant\nNUMBER OF GROUPING VARIABLES(n):\n1\nGROUPING ATTRIBUTES(V):\nprod\nF-VECT([F]):\n1_sum_quant, 2_sum_quant, 3_sum_quant\nSELECT CONDITION-VECT([σ]):\n1.month=1 and 1.year=2020 and 1.prod=prod\n2.month=2 and 2.year=2020 and 2.prod=prod\n3.month=3 and 3.year=2020 and 3.prod=prod\nHAVING_CONDITION(G):\n\n'
+    lines = 'SELECT ATTRIBUTE(S):\nprod, month, 1_sum_quant, 2_sum_quant, 3_sum_quant, 1_count_quant \nNUMBER OF GROUPING VARIABLES(n):\n1\nGROUPING ATTRIBUTES(V):\nprod\nF-VECT([F]):\n1_sum_quant, 2_sum_quant, 3_sum_quant, 1_count_quant\nSELECT CONDITION-VECT([σ]):\n1.month=1 and 1.year=2020 and 1.prod=prod\n2.month=2 and 2.year=2020 and 2.prod=prod\n3.month=3 and 3.year=2020 and 3.prod=prod\nHAVING_CONDITION(G):\n'
     emf_struct = process_txt(lines)
     rows = cur.fetchall()
     column_names = [description[0] for description in cur.description]
