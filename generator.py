@@ -148,8 +148,11 @@ def make_df(table): #make the table we get for our sql table a dataframe as they
 
 def replace_with_emf_or_gb(match): #2nd regex, this will basically rename the variables in the emf struct for the sigma and having clauses to pull the data from the right sources
     variable = match.group(0)
-    if re.match(r'^\w+_\w+\d+$', variable): #if it matches on this form of a gro
-        return f"gb['{variable}']"
+    if re.match(r'^\w+_\w+\d+$', variable):  # Check for gb case
+        if "avg" in variable: 
+            return f"gb['{variable}'][0]"
+        else:
+            return f"gb['{variable}']"
     elif re.match(r'^[A-Za-z_]+\d+$', variable):
         word_part = re.match(r'^([A-Za-z_]+)\d+$', variable).group(1)
         return f"row['{word_part}']"
@@ -157,7 +160,6 @@ def replace_with_emf_or_gb(match): #2nd regex, this will basically rename the va
         return f"normal_aggregates['{variable}']"
     else:
         return variable
-  
 
 def make_emf_struct(emf_struct, df): #this is the function to create the intial table of the mf_struct before the select or having clauses
     try:
@@ -423,10 +425,13 @@ def make_df(table):
     df = pd.DataFrame(table)
     return df
 
-def replace_with_emf_or_gb(match):
+def replace_with_emf_or_gb(match): #2nd regex, this will basically rename the variables in the emf struct for the sigma and having clauses to pull the data from the right sources
     variable = match.group(0)
-    if re.match(r'^\w+_\w+\d+$', variable):
-        return f"gb['{{variable}}']"
+    if re.match(r'^\w+_\w+\d+$', variable):  # Check for gb case
+        if "avg" in variable: 
+            return f"gb['{{variable}}'][0]"
+        else:
+            return f"gb['{{variable}}']"
     elif re.match(r'^[A-Za-z_]+\d+$', variable):
         word_part = re.match(r'^([A-Za-z_]+)\d+$', variable).group(1)
         return f"row['{{word_part}}']"
@@ -560,6 +565,8 @@ def query():
     mf_struct, normal_aggregates = make_emf_struct(emf_struct, df)
     filtered_mf_struct = handle_having_conditions(emf_struct, mf_struct, normal_aggregates)
     final_mf_struct = handle_selection(emf_struct, filtered_mf_struct, normal_aggregates)
+    result_df = pd.DataFrame(final_mf_struct)
+    result_df.to_csv("output.csv", index=False)  # Set index=False to avoid saving index as a column
     return tabulate.tabulate(final_mf_struct,
                         headers="keys", tablefmt="psql")
 

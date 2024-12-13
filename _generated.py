@@ -127,10 +127,13 @@ def make_df(table):
     df = pd.DataFrame(table)
     return df
 
-def replace_with_emf_or_gb(match):
+def replace_with_emf_or_gb(match): #2nd regex, this will basically rename the variables in the emf struct for the sigma and having clauses to pull the data from the right sources
     variable = match.group(0)
-    if re.match(r'^\w+_\w+\d+$', variable):
-        return f"gb['{variable}']"
+    if re.match(r'^\w+_\w+\d+$', variable):  # Check for gb case
+        if "avg" in variable: 
+            return f"gb['{variable}'][0]"
+        else:
+            return f"gb['{variable}']"
     elif re.match(r'^[A-Za-z_]+\d+$', variable):
         word_part = re.match(r'^([A-Za-z_]+)\d+$', variable).group(1)
         return f"row['{word_part}']"
@@ -256,7 +259,7 @@ def query():
                             cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
-    lines = 'SELECT ATTRIBUTE(S):\nprod, month, 1_count_quant, 2_count_quant, avg_quant\nNUMBER OF GROUPING VARIABLES(n):\n2\nGROUPING ATTRIBUTES(V):\nprod, month\nF-VECT([F]):\n1_count_quant, 2_count_quant, avg_quant\nSELECT CONDITION-VECT([σ]):\n1.prod=prod and 1.month=month-1 and 1.quant>avg_quant\n2.prod=prod and 2.month=month+1 and 2.quant>avg_quant\nHAVING_CONDITION(G):\n2_count_quant > 30'
+    lines = "SELECT ATTRIBUTE(S):\ncust, prod, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nNUMBER OF GROUPING VARIABLES(n):\n3\nGROUPING ATTRIBUTES(V):\ncust, prod\nF-VECT([F]):\nsum_quant, 1_sum_quant, 1_avg_quant, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nSELECT CONDITION-VECT([σ]):\n1.state='NY' and 1.cust=cust and 1.month=3\n2.state=’NJ’ and 2.cust=cust and 2.quant>1_avg_quant\n3.state=’CT’ and 3.cust=cust\nHAVING_CONDITION(G):\n3_avg_quant > 475"
     emf_struct = process_txt(lines)
     rows = cur.fetchall()
     column_names = [description[0] for description in cur.description]
@@ -264,6 +267,8 @@ def query():
     mf_struct, normal_aggregates = make_emf_struct(emf_struct, df)
     filtered_mf_struct = handle_having_conditions(emf_struct, mf_struct, normal_aggregates)
     final_mf_struct = handle_selection(emf_struct, filtered_mf_struct, normal_aggregates)
+    result_df = pd.DataFrame(final_mf_struct)
+    result_df.to_csv("output.csv", index=False)  # Set index=False to avoid saving index as a column
     return tabulate.tabulate(final_mf_struct,
                         headers="keys", tablefmt="psql")
 
