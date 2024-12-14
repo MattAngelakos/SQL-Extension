@@ -1,0 +1,6 @@
+SELECT 
+    cust, 
+    prod, 
+    SUM(SUM(quant)) OVER () AS total_sum_quant
+FROM sales
+GROUP BY cust, prod;

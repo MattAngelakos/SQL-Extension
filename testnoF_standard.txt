@@ -1,0 +1,5 @@
+SELECT 
+    cust, 
+    prod
+FROM sales
+GROUP BY cust, prod;

@@ -1,0 +1,12 @@
+SELECT
+    cust,
+    prod,
+    COUNT(quant) AS total_count,
+    SUM(quant) AS total_sum,
+    AVG(quant) AS average_quantity,
+    MIN(quant) AS min_quantity,
+    MAX(quant) AS max_quantity
+FROM
+    sales
+GROUP BY
+    cust, prod;
