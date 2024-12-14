@@ -1,0 +1,4 @@
+psycopg-binary
+tabulate
+pandas
+dotenv

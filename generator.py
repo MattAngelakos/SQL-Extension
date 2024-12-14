@@ -63,7 +63,7 @@ def parse_condition_sql(condition):
             args = sorted([format_node(value) for value in node.values], key=lambda x: SQL_PRECEDENCE[type(node.op)]) #sort precendence recurisvely
             return f"({f' {op} '.join(args)})" #return the operator
         elif isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not): #if the current node is a boolean operator we will execute this
-            return f"NOT {format_node(node.operand)}"
+            return f"not {format_node(node.operand)}"
         elif isinstance(node, ast.Compare): #if the current node is a comparison operator we will execute this
             left = format_node(node.left) #recursively generate the tree on the left hand side as the left of the comparison must be generated properly
             comparisons = " ".join(f"{OP_SYMBOLS[type(op)]} {format_node(comp)}" for op, comp in zip(node.ops, node.comparators)) #format the node per the precedence
@@ -344,7 +344,7 @@ def parse_condition_sql(condition):
             args = sorted([format_node(value) for value in node.values], key=lambda x: SQL_PRECEDENCE[type(node.op)])
             return f"({{f' {{op}} '.join(args)}})"
         elif isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
-            return f"NOT {{format_node(node.operand)}}"
+            return f"not {{format_node(node.operand)}}"
         elif isinstance(node, ast.Compare):
             left = format_node(node.left)
             comparisons = " ".join(f"{{OP_SYMBOLS[type(op)]}} {{format_node(comp)}}" for op, comp in zip(node.ops, node.comparators))
