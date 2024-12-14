@@ -2,7 +2,7 @@ CREATE VIEW B1 AS
 SELECT 
     x.prod, 
     x.month, 
-    AVG(y.quantity) AS avg_x
+    AVG(y.quant) AS avg_x
 FROM Sales x
 JOIN Sales y
     ON x.prod = y.prod
@@ -12,7 +12,7 @@ CREATE VIEW B2 AS
 SELECT 
     x.prod, 
     x.month, 
-    AVG(y.quantity) AS avg_y
+    AVG(y.quant) AS avg_y
 FROM Sales x
 JOIN Sales y
     ON x.prod = y.prod
