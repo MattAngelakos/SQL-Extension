@@ -74,7 +74,7 @@ def rearrange_variable_names(expression):
     expression = re.sub(r'\.', '_', expression)
     expression = re.sub(r'\b_+', '', expression)
     expression = re.sub(r'(?<!\s)([<>])(?!=)', r' \1 ', expression)
-    expression = re.sub(r'(?<!\s)=(?!=)', r'==', expression)
+    expression = re.sub(r'(?<![<>!=])=(?!=)', r'==', expression)
     return expression.strip()
 
 def process_txt(lines):
@@ -131,7 +131,7 @@ def replace_with_emf_or_gb(match): #2nd regex, this will basically rename the va
     variable = match.group(0)
     if re.match(r'^\w+_\w+\d+$', variable):  # Check for gb case
         if "avg" in variable: 
-            return f"gb['{variable}'][0]"
+            return f"gb['{variable}'][1]"
         else:
             return f"gb['{variable}']"
     elif re.match(r'^[A-Za-z_]+\d+$', variable):
@@ -259,7 +259,7 @@ def query():
                             cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
-    lines = "SELECT ATTRIBUTE(S):\ncust, prod, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nNUMBER OF GROUPING VARIABLES(n):\n3\nGROUPING ATTRIBUTES(V):\ncust, prod\nF-VECT([F]):\nsum_quant, 1_sum_quant, 1_avg_quant, 2_sum_quant, 2_avg_quant, 3_sum_quant, 3_avg_quant\nSELECT CONDITION-VECT([σ]):\n1.state='NY' and 1.cust=cust and 1.month=3\n2.state=’NJ’ and 2.cust=cust and 2.quant>1_avg_quant\n3.state=’CT’ and 3.cust=cust\nHAVING_CONDITION(G):\n3_avg_quant > 475"
+    lines = "SELECT ATTRIBUTE(S):\nprod, 1_sum_quant, 2_avg_quant, 3_min_quant, 4_max_quant, 5_count_quant\nNUMBER OF GROUPING VARIABLES(n):\n5\nGROUPING ATTRIBUTES(V):\nprod\nF-VECT([F]):\n1_sum_quant, 2_avg_quant, 3_min_quant, 4_max_quant, 5_count_quant\nSELECT CONDITION-VECT([σ]):\n1.month=1 and 1.year=2020 and 1.prod=prod and 1.day>=2\n2.month=2 and 2.year=2020 and 2.prod=prod and 2.day<=30\n3.month=3 and 3.year=2020 and 3.prod=prod and 3.day!=16 and 3.quant>2_avg_quant\n4.month=4 and 4.year=2020 and 4.prod=prod and 4.day<20 and 4.quant<3_min_quant\n5.month=5 and 5.prod=prod and 5.day>2 and 5.state='NJ'\nHAVING_CONDITION(G):\n5_count_quant>11"
     emf_struct = process_txt(lines)
     rows = cur.fetchall()
     column_names = [description[0] for description in cur.description]

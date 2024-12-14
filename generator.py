@@ -88,14 +88,16 @@ def preprocess_expression(expression): #‘ was giving us issues so we make them
     expression = expression.replace('’', "'").replace('‘', "'")
     return expression
 
-def rearrange_variable_names(expression): #essentially this function just renames the input variables as the ones given are invalid in python
+
+def rearrange_variable_names(expression):
     expression = preprocess_expression(expression)
     expression = re.sub(r'\b_?([a-zA-Z_]*)(\d+)(\w*\.?\w*)?\b', r'\1\3\2', expression)
     expression = re.sub(r'\.', '_', expression)
     expression = re.sub(r'\b_+', '', expression)
-    expression = re.sub(r'(?<!\s)([<>])(?!=)', r' \1 ', expression)
-    expression = re.sub(r'(?<!\s)=(?!=)', r'==', expression)
+    expression = re.sub(r'(?<![<>=])([<>])(?![=])', r' \1 ', expression)
+    expression = re.sub(r'(?<![<>!=])=(?!=)', r'==', expression)
     return expression.strip()
+
 
 def process_txt(lines): #this function takes in a string(the query input) and processes it into a useable emf_struct of all 6 conditions
     lines = lines.splitlines() #make the string an array
@@ -150,7 +152,7 @@ def replace_with_emf_or_gb(match): #2nd regex, this will basically rename the va
     variable = match.group(0)
     if re.match(r'^\w+_\w+\d+$', variable):  # Check for gb case
         if "avg" in variable: 
-            return f"gb['{variable}'][0]"
+            return f"gb['{variable}'][1]"
         else:
             return f"gb['{variable}']"
     elif re.match(r'^[A-Za-z_]+\d+$', variable):
@@ -372,7 +374,7 @@ def rearrange_variable_names(expression):
     expression = re.sub(r'\.', '_', expression)
     expression = re.sub(r'\\b_+', '', expression)
     expression = re.sub(r'(?<!\s)([<>])(?!=)', r' \\1 ', expression)
-    expression = re.sub(r'(?<!\s)=(?!=)', r'==', expression)
+    expression = re.sub(r'(?<![<>!=])=(?!=)', r'==', expression)
     return expression.strip()
 
 def process_txt(lines):
@@ -429,7 +431,7 @@ def replace_with_emf_or_gb(match): #2nd regex, this will basically rename the va
     variable = match.group(0)
     if re.match(r'^\w+_\w+\d+$', variable):  # Check for gb case
         if "avg" in variable: 
-            return f"gb['{{variable}}'][0]"
+            return f"gb['{{variable}}'][1]"
         else:
             return f"gb['{{variable}}']"
     elif re.match(r'^[A-Za-z_]+\d+$', variable):
