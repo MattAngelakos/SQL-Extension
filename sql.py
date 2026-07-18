@@ -22,7 +22,7 @@ def query():
     #cur.execute("SELECT G1.prod, G1.sum_quant_1, G2.avg_quant_2, G3.min_quant_3, G4.max_quant_4, G5.count_quant_5 FROM G1 JOIN G2 ON G1.prod = G2.prod JOIN G3 ON G1.prod = G3.prod JOIN G4 ON G1.prod = G4.prod JOIN G5 ON G1.prod = G5.prod WHERE G5.count_quant_5 > 11;")
     #q2
     #cur.execute("CREATE VIEW B1 AS SELECT x.prod, x.month, AVG(y.quant) AS avg_x FROM Sales x JOIN Sales y ON x.prod = y.prod AND x.month > y.month GROUP BY x.prod, x.month; CREATE VIEW B2 AS SELECT x.prod, x.month, AVG(y.quant) AS avg_y FROM Sales x JOIN Sales y ON x.prod = y.prod AND x.month < y.month GROUP BY x.prod, x.month; SELECT B1.prod, B1.month, B1.avg_x, B2.avg_y FROM B1 JOIN B2 ON B1.prod = B2.prod AND B1.month = B2.month;")
-    #cur.execute("SELECT B1.prod, B1.month, B1.avg_x, B2.avg_y FROM B1 JOIN B2 ON B1.prod = B2.prod AND B1.month = B2.month;")
+    cur.execute("SELECT B1.prod, B1.month, B1.avg_x, B2.avg_y FROM B1 JOIN B2 ON B1.prod = B2.prod AND B1.month = B2.month;")
     #q4
     #cur.execute("SELECT cust, prod, COUNT(quant) AS total_count, SUM(quant) AS total_sum, AVG(quant) AS average_quantity, MIN(quant) AS min_quantity, MAX(quant) AS max_quantity FROM sales GROUP BY cust, prod;")
     #noF
